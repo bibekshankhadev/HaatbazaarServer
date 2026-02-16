@@ -9,7 +9,11 @@ import {
   getRevenueReport,
   deleteUser,
   getPendingNegotiations,
+  getFarmerById
 } from "../controllers/adminController.js"
+
+
+
 
 const router = express.Router()
 
@@ -20,6 +24,8 @@ router.use(protect, authorizeRoles("admin"))
 router.get("/farmers/pending", getPendingFarmers)
 router.put("/farmers/:userId/approve", approveFarmer)
 router.put("/farmers/:userId/reject", rejectFarmer)
+router.get("/farmers/:userId", getFarmerById);
+
 
 // User management
 router.get("/users", getAllUsers)

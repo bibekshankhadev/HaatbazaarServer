@@ -4,6 +4,7 @@ import HaatEvent from "../models/HaatEvent.js"
 import Order from "../models/Order.js"
 import Negotiation from "../models/Negotiation.js"
 import GroupSale from "../models/GroupSale.js"
+import { createNotification } from "./notificationController.js"
 
 // Approve farmer account
 export const approveFarmer = async (req, res) => {
@@ -18,6 +19,14 @@ export const approveFarmer = async (req, res) => {
       return res.status(400).json({ message: "User is not a farmer" })
     }
 
+    await createNotification(
+      user._id,
+      req.user.id,
+      "farmer_request",
+      "Farmer account approved",
+      "Your farmer account has been approved. You can now login and start selling.",
+    )
+
     res.json({ message: "Farmer approved successfully", user })
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message })
@@ -31,6 +40,16 @@ export const rejectFarmer = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" })
+    }
+
+    if (user.role === "farmer") {
+      await createNotification(
+        user._id,
+        req.user.id,
+        "farmer_request",
+        "Farmer account update",
+        "Your farmer account is still pending/rejected. Please contact admin for details.",
+      )
     }
 
     res.json({ message: "Farmer rejected", user })
@@ -187,3 +206,39 @@ export const getPendingNegotiations = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message })
   }
 }
+
+export const getFarmerById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const farmer = await User.findById(userId).select(
+      "-password -refreshToken"
+    );
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    if (farmer.role !== "farmer") {
+      return res.status(400).json({
+        success: false,
+        message: "User is not a farmer",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: farmer,
+    });
+  } catch (error) {
+    console.error("Get farmer by ID error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching farmer",
+    });
+  }
+};

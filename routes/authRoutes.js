@@ -1,5 +1,11 @@
 import express from "express";
-import { register, login } from "../controllers/authController.js";
+import {
+  register,
+  login,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
+} from "../controllers/authController.js";
 import { uploadSingle } from "../middleware/upload.js";
 
 const router = express.Router();
@@ -9,5 +15,8 @@ router.post("/register", uploadSingle, register);
 
 // Login
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 
 export default router;

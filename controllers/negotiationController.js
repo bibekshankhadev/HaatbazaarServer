@@ -4,22 +4,23 @@ import Product from "../models/Product.js"
 // Initiate negotiation or place first offer
 export const createNegotiation = async (req, res) => {
   try {
-    const { productId, price, quantity, message } = req.body
+    const { productId, product, price, quantity, message } = req.body
+    const resolvedProductId = productId || product
     const buyerId = req.user.id
 
-    if (!productId || !price || !quantity) {
+    if (!resolvedProductId || price == null || quantity == null) {
       return res.status(400).json({ message: "Missing required fields" })
     }
 
-    const product = await Product.findById(productId)
+    const selectedProduct = await Product.findById(resolvedProductId)
 
-    if (!product) {
+    if (!selectedProduct) {
       return res.status(404).json({ message: "Product not found" })
     }
 
     // Check if negotiation already exists
     let negotiation = await Negotiation.findOne({
-      product: productId,
+      product: resolvedProductId,
       buyer: buyerId,
       status: "active",
     })
@@ -35,9 +36,9 @@ export const createNegotiation = async (req, res) => {
     } else {
       // Create new negotiation
       negotiation = new Negotiation({
-        product: productId,
+        product: resolvedProductId,
         buyer: buyerId,
-        farmer: product.farmer,
+        farmer: selectedProduct.farmer,
         offers: [
           {
             offeredBy: buyerId,
@@ -112,13 +113,14 @@ export const respondToNegotiation = async (req, res) => {
 export const getNegotiations = async (req, res) => {
   try {
     const userId = req.user.id
-    const { status } = req.query
+    const { status, product } = req.query
 
     const filter = {
       $or: [{ buyer: userId }, { farmer: userId }],
     }
 
     if (status) filter.status = status
+    if (product) filter.product = product
 
     const negotiations = await Negotiation.find(filter)
       .populate("buyer", "name phone profilePic")

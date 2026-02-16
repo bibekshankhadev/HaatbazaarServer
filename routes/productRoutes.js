@@ -1,12 +1,4 @@
-/**
- * protect is a middleware to protect routes that require authentication.
- * authorizeRoles is a middleware to authorize users based on their roles.
- * uploadSingle is a middleware to handle single file uploads.
- */
-
-import express from "express"
-import { protect, authorizeRoles } from "../middleware/auth.js"
-import { uploadSingle } from "../middleware/upload.js"
+import express from "express";
 import {
   createProduct,
   getProducts,
@@ -15,20 +7,40 @@ import {
   deleteProduct,
   getPendingProducts,
   updateProductStatus,
-} from "../controllers/productController.js"
+  getProductsByFarmer,
+  getSmartProducts,
+  getBulkBuyProducts,
+} from "../controllers/productController.js";
 
-const router = express.Router()
+import { protect, authorizeRoles } from "../middleware/auth.js";
+import { uploadSingle } from "../middleware/upload.js"; // <-- use named export
 
-// Public routes
-router.get("/", getProducts)
-router.get("/:id", getProduct)
+const router = express.Router();
 
-// Protected farmer/admin routes
-router.post("/", protect, authorizeRoles("farmer", "admin"), uploadSingle, createProduct)
-router.put("/:id", protect, authorizeRoles("farmer", "admin"), uploadSingle, updateProduct)
-router.delete("/:id", protect, authorizeRoles("farmer", "admin"), deleteProduct)
+// PUBLIC
+router.get("/", getProducts);
+// BUYER - get smart ordered products
+router.get("/smart/order", protect, authorizeRoles("buyer"), getSmartProducts);
+// BUYER - get bulk buy products (group sales + >10kg)
+router.get("/bulk-buy", protect, authorizeRoles("buyer"), getBulkBuyProducts);
+router.get("/my-products", protect, authorizeRoles("farmer"), getProductsByFarmer); // must be BEFORE /:id
+router.get("/:id", getProduct);
 
-router.get("/admin/pending", protect, authorizeRoles("admin"), getPendingProducts)
-router.put("/admin/:id/status", protect, authorizeRoles("admin"), updateProductStatus)
+// FARMER
+router.post(
+  "/",
+  protect,
+  authorizeRoles("farmer"),
+  uploadSingle,
+  createProduct
+);
 
-export default router
+// ADMIN
+router.get("/pending", protect, authorizeRoles("admin"), getPendingProducts);
+router.put("/:id/status", protect, authorizeRoles("admin"), updateProductStatus);
+
+// OWNER / ADMIN
+router.put("/:id", protect, authorizeRoles("farmer", "admin"), uploadSingle, updateProduct);
+router.delete("/:id", protect, authorizeRoles("farmer", "admin"), deleteProduct);
+
+export default router;

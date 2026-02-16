@@ -5,6 +5,7 @@ const haatEventSchema = new mongoose.Schema(
     // Event details
     name: { type: String, required: true },
     description: { type: String, required: true },
+    image: { type: String }, // Cloudinary image URL
 
     // Location-based (Haat location)
     location: {
@@ -15,8 +16,10 @@ const haatEventSchema = new mongoose.Schema(
     },
 
     // Event dates
-    eventDate: { type: Date, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
     registrationDeadline: { type: Date, required: true },
+    eventDate: { type: Date }, // Kept for backward compatibility
 
     // Admin management
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

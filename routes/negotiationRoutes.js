@@ -20,5 +20,6 @@ router.get("/:id", protect, getNegotiation)
 
 // Respond to negotiation (counter/accept/reject)
 router.put("/:id/respond", protect, respondToNegotiation)
+router.patch("/:id", protect, respondToNegotiation)
 
 export default router

@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["placed", "accepted", "rejected", "shipped", "delivered", "cancelled"],
+      enum: ["placed", "accepted", "packing", "rejected", "shipped", "delivered", "cancelled"],
       default: "placed",
     },
     totalAmount: { type: Number, required: true },
@@ -22,6 +22,44 @@ const orderSchema = new mongoose.Schema(
       longitude: { type: Number },
       address: { type: String },
     },
+    // Delivery options
+    deliveryOption: {
+      type: String,
+      enum: ["self_pickup", "request_delivery"],
+      default: "self_pickup",
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ["pending", "accepted", "rejected", "in_transit", "completed"],
+      default: "pending",
+    },
+    deliveryRequest: {
+      isRequested: { type: Boolean, default: false },
+      requestedAt: { type: Date },
+      respondedAt: { type: Date },
+      response: { type: String, enum: ["accepted", "rejected"] },
+    },
+    // Payment details
+    paymentMethod: {
+      type: String,
+      enum: ["cash_on_delivery", "esewa"],
+      default: "cash_on_delivery",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    paymentDetails: {
+      transactionId: String,
+      transactionUuid: String,
+      referenceId: String,
+      paidAt: Date,
+      amount: Number,
+      esewaStatus: String,
+      statusCheckedAt: Date,
+    },
+    inventoryDeducted: { type: Boolean, default: false },
     orderDate: { type: Date, default: Date.now },
   },
   { timestamps: true },

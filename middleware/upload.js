@@ -18,8 +18,19 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-export const uploadSingle = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
-}).single("image");
+// export const uploadSingle = multer({
+//   storage,
+//   fileFilter,
+//   limits: { fileSize: 5 * 1024 * 1024 },
+// }).single("image");
+
+export const uploadSingle = (req, res, next) => {
+  multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }).single("image")(req, res, (err) => {
+       if (err) return res.status(400).json({ error: err.message });
+    next();
+  });
+};
